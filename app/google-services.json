@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "977661077036",
+    "project_id": "skin-cancer-detector-os",
+    "storage_bucket": "skin-cancer-detector-os.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:977661077036:android:4bd0801c10aeb4a22a1389",
+        "android_client_info": {
+          "package_name": "te.mini_project.skincancerdetection"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "977661077036-8va2hfm7b20nav7n6eh5e8qv2lj4rf0b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuVrcjs9pDYh4DZG1vGKuGyEM2ci0Q3OM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "977661077036-8va2hfm7b20nav7n6eh5e8qv2lj4rf0b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
