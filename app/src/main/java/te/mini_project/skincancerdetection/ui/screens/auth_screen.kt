@@ -16,22 +16,26 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.PhoneAuthOptions
 import te.mini_project.skincancerdetection.Greeting
+import te.mini_project.skincancerdetection.MainActivity
 import te.mini_project.skincancerdetection.onlyIntUppersString
 import te.mini_project.skincancerdetection.ui.theme.SkinCancerDetectionTheme
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun AuthScreen(){
+fun AuthScreen(mainActivity: MainActivity){
     val name by remember{ mutableStateOf("") }
     val phoneNumber by remember{ mutableStateOf(-1) }
     val otp by remember{ mutableStateOf(-1) }
     var otpVisible by remember {
         mutableStateOf(false)
     }
-    val otpValid by remember {
-        mutableStateOf(false)
+    var btnText by remember {
+        mutableStateOf("Sign In")
     }
+
     Scaffold {
         Column(
             verticalArrangement = Arrangement.SpaceEvenly,
@@ -53,8 +57,15 @@ fun AuthScreen(){
                 }, placeholder = { Text("Enter Received OTP") }, label = {Text("Name")})
 
             }
-            Button(onClick = {  }, enabled = otpValid) {
-                    Text(text = "Next")
+            Button(onClick = {
+                if(btnText == "Sign In"){
+                    mainActivity.signIn("+91 1234 567 891")
+                }else{
+                    //home screen
+
+                }
+            }) {
+                    Text(text =btnText)
             }
 
 
@@ -64,6 +75,8 @@ fun AuthScreen(){
         }
     }
 }
+
+
 
 @Preview(showBackground = true)
 @Composable
