@@ -1,5 +1,6 @@
 package te.mini_project.skincancerdetection.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Arrangement
@@ -18,17 +19,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthOptions
-import te.mini_project.skincancerdetection.Greeting
 import te.mini_project.skincancerdetection.MainActivity
 import te.mini_project.skincancerdetection.onlyIntUppersString
 import te.mini_project.skincancerdetection.ui.theme.SkinCancerDetectionTheme
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun AuthScreen(mainActivity: MainActivity){
-    val name by remember{ mutableStateOf("") }
-    val phoneNumber by remember{ mutableStateOf(-1) }
-    val otp by remember{ mutableStateOf(-1) }
+fun AuthScreen(signIn:(String,(String)->Unit)->Unit,navNext:()->Unit){
+    var name by remember{ mutableStateOf("") }
+    var phoneNumber by remember{ mutableStateOf("") }
+    var otp by remember{ mutableStateOf("") }
     var otpVisible by remember {
         mutableStateOf(false)
     }
@@ -47,23 +48,30 @@ fun AuthScreen(mainActivity: MainActivity){
             ))
 
             TextField(value = name, onValueChange = {
-
+                name = it
             }, placeholder = { Text("Enter Your Name") }, label = {Text("Name")})
-            TextField(value = phoneNumber.onlyIntUppersString(), onValueChange = {
-                otpVisible = it.length ==10
+            TextField(value = phoneNumber, onValueChange = {
+                    otpVisible = it.length ==10
+                    phoneNumber = it
             }, placeholder = { Text("Enter Your Phone Number") }, label = {Text("Phone Number")})
             AnimatedVisibility(visible = otpVisible) {
-                TextField(value = otp.onlyIntUppersString(), onValueChange = {
-                }, placeholder = { Text("Enter Received OTP") }, label = {Text("Name")})
+                TextField(value = otp, onValueChange = {
+                                                       otp = it
+                }, placeholder = { Text("Enter Received OTP") }, label = {Text("OTP")})
 
             }
             Button(onClick = {
-                if(btnText == "Sign In"){
-                    mainActivity.signIn("+91 1234 567 891")
-                }else{
-                    //home screen
-
-                }
+//                if(btnText == "Sign In"){
+//                    signIn("+1 650-555-1212"){
+//                        otpVisible = true
+//                        otp = it
+//                        btnText = "Next"
+//                    }
+//                }else{
+//                    //home screen
+//
+//                }
+                navNext()
             }) {
                     Text(text =btnText)
             }
@@ -82,6 +90,5 @@ fun AuthScreen(mainActivity: MainActivity){
 @Composable
 fun DefaultPreview() {
     SkinCancerDetectionTheme {
-        AuthScreen()
     }
 }
