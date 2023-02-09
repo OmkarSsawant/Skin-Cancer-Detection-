@@ -1,8 +1,58 @@
 package te.mini_project.skincancerdetection.ui.screens
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import te.mini_project.skincancerdetection.ui.data.Result as UiResult
+private  val mockResults  = listOf<UiResult>(
+    UiResult("dvfvdfsvd",0.9f),
+    UiResult("vdsvdvdv",0.85f),
+    UiResult("dvdvdsv",0.7f),
+    UiResult("dvdvdvdsvdv",0.4f),
+    UiResult("dvdsvdvv",0.2f),
+)
+@OptIn(ExperimentalMaterialApi::class)
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun ResultScreen(){
+@Preview
 
+fun ResultScreen(results:List<UiResult> = mockResults){
+
+        Scaffold(
+            topBar = {
+                    Text(modifier = Modifier.padding(12.dp),text="Detected Results",style=MaterialTheme.typography.h3)
+            }
+        ) {
+            LazyColumn(
+                Modifier.padding(12.dp),
+                contentPadding = PaddingValues(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ){
+                items(results){
+                    Card(elevation = 12.dp){
+                        ListItem(text =  {
+                            Button(
+                                onClick = {  }) {
+                                Text("Details")
+                            }
+                                         }, secondaryText = { LinearProgressIndicator( modifier = Modifier.padding(12.dp),
+                            progress = it.accuracy
+                        )}, trailing = { Text("${it.accuracy/1f * 100f}  %")}, overlineText = {
+                            Text(it.diseaseName, style = MaterialTheme.typography.h5)
+                        })
+                    }
+
+                }
+            }
+        }
 }
+

@@ -41,7 +41,7 @@ import te.mini_project.skincancerdetection.ui.theme.SkinCancerDetectionTheme
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter", "SuspiciousIndentation")
 @Composable
-fun HomeScreen(){
+fun HomeScreen(navScan:()->Unit){
     val scaffoldHost = rememberScaffoldState()
     var clickedColor by remember {
         mutableStateOf(Color.White)
@@ -95,7 +95,7 @@ fun HomeScreen(){
         }
 
     }, floatingActionButton = {
-        FloatingActionButton(onClick = {  }) {
+        FloatingActionButton(onClick = navScan) {
             Icon(painter = painterResource(id = android.R.drawable.ic_input_add), contentDescription = "")
         }
         }, floatingActionButtonPosition = FabPosition.Center, isFloatingActionButtonDocked = true){
@@ -145,14 +145,14 @@ fun HomeScreen(){
                         withStyle(SpanStyle(fontSize = 42.sp)){
                             append("3")
                             withStyle(SpanStyle(fontSize = 12.sp)){
-                                append("w")
+                                append("x week")
                             }
                         }
                     append('\t')
                         withStyle(SpanStyle(fontSize = 32.sp)){
                             append("25")
                             withStyle(SpanStyle(fontSize = 12.sp)){
-                                append("t")
+                                append("x total")
                             }
                         }
 
@@ -169,6 +169,8 @@ fun HomeScreen(){
 @Composable
 fun DefaultHomeScreenPreview() {
     SkinCancerDetectionTheme {
-        HomeScreen()
+        HomeScreen{
+
+        }
     }
 }
