@@ -12,14 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import te.mini_project.skincancerdetection.ui.data.Result as UiResult
-private  val mockResults  = listOf<UiResult>(
-    UiResult("dvfvdfsvd",0.9f),
-    UiResult("vdsvdvdv",0.85f),
-    UiResult("dvdvdsv",0.7f),
-    UiResult("dvdvdvdsvdv",0.4f),
-    UiResult("dvdsvdvv",0.2f),
-)
+import te.mini_project.skincancerdetection.mockResults
+import te.mini_project.skincancerdetection.data.Result as UiResult
+
 @OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable

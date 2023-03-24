@@ -12,9 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,63 +24,116 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
+@OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun ScanScreen(setUpCam:(SurfaceProvider)->Unit){
-
-    Scaffold {
-        Box {
-            AndroidView(modifier = Modifier.fillMaxSize(), factory = {
-                val cameraPreviewView = PreviewView(it)
-                setUpCam(cameraPreviewView.surfaceProvider)
-                cameraPreviewView
-            })
-        Card(
-            Modifier
+fun ScanScreen(setUpCam:(SurfaceProvider,ModalBottomSheetState)->Unit,navToResults:()->Unit){
+    val mbss = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    ResultModalBottomSheet(btnState = mbss, barColor = Color.Red, text = "Sorry! \n U r f", btnText = "Show Results",
+        navToResults = navToResults
+    )
+    {
+        Scaffold {
+            Box {
+                AndroidView(modifier = Modifier.fillMaxSize(), factory = {
+                    val cameraPreviewView = PreviewView(it)
+                    setUpCam(cameraPreviewView.surfaceProvider,mbss)
+                    cameraPreviewView
+                })
+                Card(
+                    Modifier
 //                .offset(x = 50.dp, y = 800.dp)
-                .fillMaxWidth(.9f)
-                .align(Alignment.BottomCenter)
-                .padding(52.dp)
-                .background(Color.DarkGray)
-            ,
-            shape = RoundedCornerShape(12.dp),
-            backgroundColor = Color.DarkGray
-        ) {
-            Row {
-                Column {
-                    Box(
-                        Modifier
-                            .clip(CircleShape)
-                            .background(Color.LightGray)
+                        .fillMaxWidth(.9f)
+                        .align(Alignment.BottomCenter)
+                        .defaultMinSize(minHeight = 100.dp)
+                        .padding(52.dp)
+                        .background(Color.DarkGray)
+                    ,
+                    shape = RoundedCornerShape(24.dp),
+                    backgroundColor = Color.DarkGray
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                    }
-                    Text(text = "Focus")
-                }
-                Column {
-                    Box(
-                        Modifier
-                            .clip(CircleShape)
-                            .background(Color.LightGray)
-                    ) {
-                    }
-                    Text(text = "Clarity")
+                        Column(
+                            verticalArrangement = Arrangement.SpaceEvenly
+                            , horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Box(
+                                Modifier
+                                    .clip(CircleShape)
+                                    .size(12.dp)
+                                    .background(Color.White)
+                                    .padding(20.dp)
+                            ) {
+                            }
+                            Text(text = "Focus")
+                        }
+                        Column(
+                            verticalArrangement = Arrangement.SpaceEvenly
+                            , horizontalAlignment = Alignment.CenterHorizontally
+                        ){
+                            Box(
+                                Modifier
+                                    .clip(CircleShape)
+                                    .size(12.dp)
+                                    .background(Color.White)
+                                    .padding(20.dp)
+                            ) {
+                            }
+                            Text(text = "Clarity")
 
-                }
-                Column {
-                    Box(
-                        Modifier
-                            .clip(CircleShape)
-                            .background(Color.Green)
-                    ) {
-                    }
-                    Text(text = "Detection")
+                        }
+                        Column(
+                            verticalArrangement = Arrangement.SpaceEvenly
+                            , horizontalAlignment = Alignment.CenterHorizontally
 
+                        ) {
+                            Box(
+                                Modifier
+                                    .clip(CircleShape)
+                                    .size(12.dp)
+                                    .background(
+                                        Color.White
+                                    )
+                                    .padding(20.dp)
+                            ) {
+                            }
+                            Text(text = "Detection")
+
+                        }
+                    }
                 }
+
+
             }
         }
-
-
-
-        }
     }
+
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun ResultModalBottomSheet(navToResults:()->Unit,btnState: ModalBottomSheetState,barColor: Color,text:String,btnText:String,content:@Composable ()->Unit){
+
+
+   ModalBottomSheetLayout(sheetState = btnState,sheetContent = {
+       Box(
+           Modifier
+               .fillMaxWidth(.8f)
+               .height(24.dp)
+               .background(barColor)
+               .clip(RoundedCornerShape(12.dp))
+               .align(Alignment.CenterHorizontally)
+       ){}
+       Spacer(modifier = Modifier.height(20.dp))
+       Text(modifier = Modifier.align(Alignment.CenterHorizontally),text=text)
+       Spacer(modifier = Modifier.height(20.dp))
+       Button(modifier = Modifier.align(Alignment.CenterHorizontally),onClick = navToResults){
+            Text(btnText)
+       }
+   }) {
+    content()
+   }
 }

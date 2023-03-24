@@ -1,23 +1,24 @@
 package te.mini_project.skincancerdetection
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.SurfaceView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview.SurfaceProvider
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.*
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -26,24 +27,50 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
-import te.mini_project.skincancerdetection.ui.screens.AuthScreen
-import te.mini_project.skincancerdetection.ui.screens.HomeScreen
-import te.mini_project.skincancerdetection.ui.screens.ScanScreen
+import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import te.mini_project.skincancerdetection.data.Result
+import te.mini_project.skincancerdetection.data.SkinCancerDetector
+import te.mini_project.skincancerdetection.room.SkinCancerDatabase
+import te.mini_project.skincancerdetection.room.models.MoleScan
+import te.mini_project.skincancerdetection.ui.screens.*
 import te.mini_project.skincancerdetection.ui.theme.SkinCancerDetectionTheme
+import java.util.*
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-
 class MainActivity : ComponentActivity() {
 
+    private lateinit var skinCancerDetector : SkinCancerDetector
+    private lateinit  var executors :ExecutorService
+    private lateinit var composeCoroutineScope: CoroutineScope
+    private lateinit var db: SkinCancerDatabase
+    var reports: Map<String,Float>?=null
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        skinCancerDetector = SkinCancerDetector(this)
+        executors = Executors.newFixedThreadPool(3)
+        db = SkinCancerDatabase.getInstance(applicationContext)
         setContent {
+            composeCoroutineScope = rememberCoroutineScope()
             val navController = rememberNavController()
             SkinCancerDetectionTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    NavHost(navController, startDestination = "scan"){
+                    NavHost(navController, startDestination = "splash"){
+                        composable("splash"){
+                            te.mini_project.skincancerdetection.ui.screens.SplashScreen {
+                                navController.navigate("home")
+                            }
+                        }
                         composable("signIn"){
                             AuthScreen(signIn = {pn,smsCallback->
                                 signIn(pn){smsCode->
@@ -54,12 +81,34 @@ class MainActivity : ComponentActivity() {
                             })
                         }
                         composable("home"){
-                            HomeScreen{
+                            HomeScreen(navAnalytics = {
+                                navController.navigate("analytics")
+                            }, navScan = {
                                 navController.navigate("scan")
-                            }
+                            })
                         }
                         composable("scan"){
-                            ScanScreen(setUpCam = { setupCam(it) })
+                            ScanScreen(setUpCam = { sv,mbss-> setupCam(sv,mbss) }){
+                                val gson = GsonBuilder()
+                                    .create()
+                                val jsonString = gson.toJson(reports)
+                                navController.navigate("show_results/$jsonString")
+                                navigationgToResults = false
+                            }
+                        }
+                        composable("show_results/{results}"){
+                            val gson = GsonBuilder()
+                                .create()
+                            val aresults = it.arguments?.getString("results") ?: return@composable Box{}
+                            val tv = object: TypeToken<Map<String, Float>>() {}
+                                val results = gson.fromJson(aresults,tv)
+                                    .map { e -> Result(e.key,e.value) }
+                                    .toList()
+                            Log.i(TAG, "onCreate: $results")
+                                ResultScreen(results = results)
+                        }
+                        composable("analytics"){
+                            AnalyticsScreen()
                         }
                     }
                 }
@@ -109,7 +158,12 @@ class MainActivity : ComponentActivity() {
         PhoneAuthProvider.verifyPhoneNumber(phoneOpts)
     }
 
-    private fun setupCam(sv:SurfaceProvider) {
+    @OptIn(ExperimentalMaterialApi::class)
+    var mbss:ModalBottomSheetState?=null
+
+    @OptIn(ExperimentalMaterialApi::class)
+    private fun setupCam(sv:SurfaceProvider,mbss:ModalBottomSheetState)  : Unit{
+        this.mbss = mbss
         ProcessCameraProvider.getInstance(this)
             .let { cf ->
                 cf.addListener({
@@ -117,13 +171,78 @@ class MainActivity : ComponentActivity() {
                     val preview = androidx.camera.core.Preview.Builder()
                         .build()
                         .also { it.setSurfaceProvider(sv) }
+                    val analyzer = ImageAnalysis.Builder()
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build()
+                        .also {
+                            it.setAnalyzer(executors,SkinCancerAnalyzer())
+                        }
                 try {
                     cameraProvider.unbindAll()
-                    cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA,preview)
+                    cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA,preview,analyzer)
                 }catch (e:Exception){
                     e.printStackTrace()
                 }
                 }, ContextCompat.getMainExecutor(this))
             }
+    }
+
+
+
+    var lastTime : Long = 0L
+    var navigationgToResults = false
+
+
+
+    inner class SkinCancerAnalyzer : ImageAnalysis.Analyzer{
+        @OptIn(ExperimentalMaterialApi::class)
+        override fun analyze(image: ImageProxy) {
+            if(navigationgToResults){
+                return
+            }
+            val now = System.currentTimeMillis()
+            if(now - lastTime > 2000L){
+                 reports =  skinCancerDetector.detect(image)
+                if (reports != null) {
+                    Log.i(TAG, "analyze: $reports")
+                    //Some Event Trigger that will Open Results Screen
+                if(reports!!.values.any { it > 0.9f })
+                //Bottom Sheet and show `show results` button
+                {
+                    composeCoroutineScope.launch(Dispatchers.IO){
+                        if(mbss?.isVisible == false)
+                        {
+                            //Save Generated Result
+                            db.skinCancerDao().insertRecord(MoleScan().apply {
+                                scanDate = Date()
+                                scanResults = mapToResults(reports!!)
+                            })
+
+                            //Navigate to Results Screen
+                            withContext(Dispatchers.Main){
+                                navigationgToResults = true
+                                mbss?.show()
+
+                            }
+                        }
+                    }
+
+                }
+                }
+                image.close()
+                lastTime = System.currentTimeMillis()
+            }else {
+                image.close()
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if(::executors.isInitialized)
+            executors.shutdownNow()
+
+        if(::skinCancerDetector.isInitialized)
+            skinCancerDetector.dispose()
     }
 }
