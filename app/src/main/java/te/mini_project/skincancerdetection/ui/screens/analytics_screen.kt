@@ -43,6 +43,7 @@ fun AnalyticsScreen(){
     var moleScans by remember {
         mutableStateOf(listOf<MoleScan>())
     }
+
     LaunchedEffect(key1 = "" ){
         withContext(Dispatchers.IO){
             val db = SkinCancerDatabase.getInstance(context)

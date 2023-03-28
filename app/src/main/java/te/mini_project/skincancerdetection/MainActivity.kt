@@ -1,5 +1,6 @@
 package te.mini_project.skincancerdetection
 
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -17,7 +18,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.PermissionChecker
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -39,6 +42,7 @@ import te.mini_project.skincancerdetection.room.SkinCancerDatabase
 import te.mini_project.skincancerdetection.room.models.MoleScan
 import te.mini_project.skincancerdetection.ui.screens.*
 import te.mini_project.skincancerdetection.ui.theme.SkinCancerDetectionTheme
+import java.security.Permissions
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -56,6 +60,22 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         skinCancerDetector = SkinCancerDetector(this)
         executors = Executors.newFixedThreadPool(3)
+
+        if(arrayOf(
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                android.Manifest.permission.CAMERA,
+                android.Manifest.permission.RECORD_AUDIO
+            ).all { checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED })
+        requestPermissions(arrayOf(
+            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            android.Manifest.permission.CAMERA,
+            android.Manifest.permission.RECORD_AUDIO
+        ),100);
+        else{
+            Toast.makeText(this,"Please grant permission to proceed",Toast.LENGTH_SHORT).show()
+            finish()
+        }
+
         db = SkinCancerDatabase.getInstance(applicationContext)
         setContent {
             composeCoroutineScope = rememberCoroutineScope()
