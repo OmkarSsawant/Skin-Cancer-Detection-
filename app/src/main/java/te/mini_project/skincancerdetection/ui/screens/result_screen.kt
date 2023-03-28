@@ -18,8 +18,6 @@ import te.mini_project.skincancerdetection.data.Result as UiResult
 @OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-@Preview
-
 fun ResultScreen(results:List<UiResult> = mockResults){
 
         Scaffold(
