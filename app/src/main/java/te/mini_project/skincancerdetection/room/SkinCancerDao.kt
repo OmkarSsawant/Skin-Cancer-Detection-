@@ -14,4 +14,7 @@ interface SkinCancerDao {
 
     @Query("SELECT * FROM mole_record")
     fun observeMolesRecord():Flow<List<MoleScan>>
+
+    @Query("SELECT * FROM mole_record")
+    fun getMolesRecord():List<MoleScan>
 }

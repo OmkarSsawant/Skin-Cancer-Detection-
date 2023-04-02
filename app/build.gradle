@@ -37,6 +37,7 @@ android {
     buildFeatures {
         compose true
         mlModelBinding true
+        viewBinding true
     }
     composeOptions {
         kotlinCompilerExtensionVersion compose_version
@@ -51,12 +52,20 @@ android {
 
 dependencies {
 
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
+
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
     implementation 'androidx.activity:activity-compose:1.6.1'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'androidx.annotation:annotation:1.3.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.1'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
@@ -79,22 +88,33 @@ dependencies {
     implementation "androidx.camera:camera-extensions:${camerax_version}"
 
     implementation 'com.google.code.gson:gson:2.10.1'
-
+    implementation "dev.shreyaspatil:capturable:1.0.3"
     implementation "androidx.room:room-ktx:2.5.1"
     implementation "androidx.room:room-runtime:2.5.1"
     kapt "androidx.room:room-compiler:2.5.1"
 
+    implementation "io.coil-kt:coil-compose:1.3.2"
     //   tensorflow
     implementation 'org.tensorflow:tensorflow-lite-support:0.1.0'
     implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0'
     implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
 
-
-    // Includes the core logic for charts and other elements.
-    implementation "com.patrykandpatrick.vico:core:1.6.4"
-    // For Jetpack Compose.
-    implementation "com.patrykandpatrick.vico:compose:1.6.4"
-    // For `compose`. Creates a `ChartStyle` based on an M3 Material Theme.
-    implementation "com.patrykandpatrick.vico:compose-m3:1.6.4"
+    implementation 'com.firebaseui:firebase-ui-auth:7.2.0'
+//    // Includes the core logic for charts and other elements.
+//    implementation "com.patrykandpatrick.vico:core:1.6.4"
+//
+//    // For Jetpack Compose.
+//    implementation "com.patrykandpatrick.vico:compose:1.6.4"
+//
+//    // For the view system.
+//    implementation "com.patrykandpatrick.vico:views:1.6.4"
+//
+//    // For `compose`. Creates a `ChartStyle` based on an M2 Material Theme.
+//    implementation "com.patrykandpatrick.vico:compose-m2:1.6.4"
+//
+//    // For `compose`. Creates a `ChartStyle` based on an M3 Material Theme.
+//    implementation "com.patrykandpatrick.vico:compose-m3:1.6.4"
+//    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+    implementation "com.himanshoe:charty:1.0.1"
 
 }

@@ -12,13 +12,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.Navigator
+import com.google.gson.Gson
 import te.mini_project.skincancerdetection.mockResults
 import te.mini_project.skincancerdetection.data.Result as UiResult
 
 @OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun ResultScreen(results:List<UiResult> = mockResults){
+fun ResultScreen(results:List<UiResult> = mockResults,getNavigator:()->NavController){
 
         Scaffold(
             topBar = {
@@ -34,7 +37,9 @@ fun ResultScreen(results:List<UiResult> = mockResults){
                     Card(elevation = 12.dp){
                         ListItem(text =  {
                             Button(
-                                onClick = {  }) {
+                                onClick = {
+                                    getNavigator().navigate("details/${Gson().toJson(it)}")
+                                }) {
                                 Text("Details")
                             }
                                          }, secondaryText = { LinearProgressIndicator( modifier = Modifier.padding(12.dp),

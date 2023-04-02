@@ -14,7 +14,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.google.gson.Gson
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
+import te.mini_project.skincancerdetection.data.Result
 import te.mini_project.skincancerdetection.mockScans
 import te.mini_project.skincancerdetection.room.models.MoleScan
 import te.mini_project.skincancerdetection.ui.theme.SkinCancerDetectionTheme
@@ -25,7 +28,7 @@ val df = SimpleDateFormat("dd/MM/yyyy")
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun MolesHistory(mod: Modifier, moleScans: List<MoleScan> = mockScans){
+fun MolesHistory(mod: Modifier, moleScans: List<MoleScan> = mockScans,getNavController:()->NavController){
     if(moleScans.isNotEmpty())
     LazyColumn(
         mod.padding(12.dp),
@@ -39,22 +42,28 @@ fun MolesHistory(mod: Modifier, moleScans: List<MoleScan> = mockScans){
             Card(
                 elevation = 12.dp,
                 shape = RoundedCornerShape(12.dp),
-
+                onClick = {
+                    val r = Result(estimated.diseaseName,estimated.accuracy)
+                    val gson = Gson()
+                    val json  =  gson.toJson(r)
+                    getNavController().navigate("details/$json")
+                }
 
             ) {
                 Column(
                     Modifier.padding(top=7.dp,end=7.dp)
                 ) {
-                    Text(modifier =  Modifier.padding(7.dp),text = estimated.diseaseName, style = MaterialTheme.typography.h5.copy(fontWeight = FontWeight.SemiBold))
+                    Text(modifier =  Modifier.padding(7.dp),text = estimated.diseaseName, style = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.SemiBold))
                     Text(modifier =  Modifier.padding(horizontal = 7.dp, vertical = 4.dp),text = "Last Scanned On : ${df.format(mole.scanDate)}", style = MaterialTheme.typography.subtitle1.copy(color = Color.Gray))
                     Text(modifier =  Modifier.padding(4.dp).align(Alignment.End),
                         text = "${100 * estimated.accuracy} %", style = MaterialTheme.typography.subtitle2.copy(color = Color.LightGray))
                     Box(modifier = Modifier
                         .padding(top = 12.dp, bottom = 0.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .height(7.dp)
+                        .height(4.dp)
                         .fillMaxWidth(estimated.accuracy)
-                        .background(Color.Blue))
+                        .background(MaterialTheme.colors.primaryVariant)
+                       )
                 }
 
             }
@@ -76,6 +85,6 @@ fun MolesHistory(mod: Modifier, moleScans: List<MoleScan> = mockScans){
 @Preview(showBackground = true)
 fun DefaultHomeScreenPreview() {
     SkinCancerDetectionTheme {
-            MolesHistory(Modifier.offset(x=0.dp,y=32.dp))
+//            MolesHistory(Modifier.offset(x=0.dp,y=32.dp),)
     }
 }

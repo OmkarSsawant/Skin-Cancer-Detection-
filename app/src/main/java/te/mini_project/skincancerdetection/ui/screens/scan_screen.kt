@@ -30,10 +30,10 @@ import te.mini_project.skincancerdetection.ui.composables.ResultModalBottomSheet
 @Composable
 fun ScanScreen(setUpCam:(SurfaceProvider,ModalBottomSheetState)->Unit,navToResults:()->Unit){
     val mbss = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
-    ResultModalBottomSheet(btnState = mbss, title = "Sorry! \n U r f", btnText = "Show Results",
+    ResultModalBottomSheet(btnState = mbss, title = "You need to consult a Doctor!", btnText = "Show Results",
         navToResults = navToResults
     )
-    {
+
         Scaffold {
                 AndroidView(modifier = Modifier.fillMaxSize(), factory = {
                     val cameraPreviewView = PreviewView(it)
@@ -41,6 +41,6 @@ fun ScanScreen(setUpCam:(SurfaceProvider,ModalBottomSheetState)->Unit,navToResul
                     cameraPreviewView
                 })
         }
-    }
+
 
 }

@@ -2,6 +2,10 @@ package te.mini_project.skincancerdetection
 
 import android.opengl.ETC1.getHeight
 import android.opengl.ETC1.getWidth
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.text.intl.Locale
 import te.mini_project.skincancerdetection.data.Result
 import te.mini_project.skincancerdetection.room.models.MoleScan
 import java.sql.Time
@@ -20,6 +24,16 @@ fun Int.onlyIntUppersString() = if(this > 0 ) this.toString() else ""
 //        mask.getPixel(xBm, yBm)
 //    }
 //}
+
+fun String.spaced():String{
+    val str = if(!contains(' ') && contains(Regex("[A-Z]"))) {
+        val capLet = find { Regex("[A-Z]").matches(it.toString()) }
+        split(Regex("[A-Z]")).joinToString(" $capLet")
+    }
+    else this
+
+    return str.replaceFirstChar { if (it.isLowerCase()) it.titlecase(java.util.Locale.ENGLISH) else it.toString() }
+}
 
  public val mockResults  = listOf<Result>(
     Result("dvfvdfsvd",0.9f),

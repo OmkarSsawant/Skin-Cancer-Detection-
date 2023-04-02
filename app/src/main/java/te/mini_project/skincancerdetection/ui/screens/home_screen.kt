@@ -1,10 +1,12 @@
 package te.mini_project.skincancerdetection.ui.screens
 
+import UserProfileDialog
 import android.annotation.SuppressLint
 import android.graphics.Color as AndroidColor
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -29,7 +31,14 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
+import androidx.navigation.NavController
+import coil.compose.rememberImagePainter
+import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.data.model.User
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -39,16 +48,24 @@ import te.mini_project.skincancerdetection.ui.composables.MolesHistory
 import te.mini_project.skincancerdetection.room.SkinCancerDatabase
 import te.mini_project.skincancerdetection.room.models.MoleScan
 
-@OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter", "SuspiciousIndentation")
 @Composable
-fun HomeScreen(navScan:()->Unit,navAnalytics:()->Unit){
+fun HomeScreen(navScan:()->Unit,navAnalytics:()->Unit,getNavController: ()->NavController){
     val scaffoldHost = rememberScaffoldState()
-
+    var user:FirebaseUser? by remember {
+        mutableStateOf(null)
+    }
+    var showProfile  by remember {
+        mutableStateOf(false)
+    }
     var moleScans by remember {
         mutableStateOf(listOf<MoleScan>())
     }
+    FirebaseAuth.getInstance().addAuthStateListener {
+        user = it.currentUser
+    }
     val context = LocalContext.current.applicationContext
+
     LaunchedEffect(key1 = "" ){
             withContext(Dispatchers.IO){
                 val db = SkinCancerDatabase.getInstance(context)
@@ -59,32 +76,61 @@ fun HomeScreen(navScan:()->Unit,navAnalytics:()->Unit){
     }
 
     Scaffold(scaffoldState =  scaffoldHost/*, backgroundColor = bgTestColor*/,topBar = {
-        Row(
+        TopAppBar(
+           contentColor = Color.White,
+            actions = {
+                val dynamicColor = AndroidColor.argb(255,(255 * Math.random()).toInt(),(255 * Math.random()).toInt(),(255 * Math.random()).toInt())
 
-           horizontalArrangement =  Arrangement.SpaceBetween,
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth()
-        ){
-            val dynamicColor = AndroidColor.argb(255,(255 * Math.random()).toInt(),(255 * Math.random()).toInt(),(255 * Math.random()).toInt())
-                Text("\uD83D\uDEE1️ Home",style= TextStyle(fontSize = 32.sp, fontWeight = FontWeight.Bold))
-                Row{
-                    IconButton(onClick = {
+                IconButton(onClick = {
                         GlobalScope.launch {
-                            scaffoldHost.snackbarHostState.showSnackbar("Sending Update to doctors")
+                            scaffoldHost.snackbarHostState.showSnackbar("Refreshing")
+                            withContext(Dispatchers.IO){
+                                val db = SkinCancerDatabase.getInstance(context)
+                                db.skinCancerDao().observeMolesRecord().collect{
+                                    moleScans = it
+                                }
+                            }
                         }
+
                     }) {
                         Icon(painter = painterResource(id = android.R.drawable.stat_notify_sync), contentDescription = "send mail icon")
                     }
-                    Box(
-                        Modifier
-                            .clip(CircleShape)
-                            .background(color = Color(dynamicColor))
-                    ) {
-                            Text(modifier = Modifier.padding(12.dp),text="OS", style = TextStyle(Color.White))
+                    if(user==null){
+                        Box(
+                            Modifier
+                                .clickable {
+                                    showProfile = true
+                                }
+                                .clip(CircleShape)
+                                .background(color = Color(dynamicColor))
+                        ) {
+                            Text(modifier = Modifier.padding(12.dp),text="GT", style = TextStyle(Color.White))
+                        }
                     }
+                    else{
+                        Image(
+
+                            painter = rememberImagePainter(user!!.photoUrl),
+                            contentDescription = user!!.displayName!!.first().toString(),
+                            modifier = Modifier
+                                .size(45.dp)
+                                .clip(CircleShape)
+                                .clickable {
+                                    showProfile = true
+                                }
+                        )
+                    }
+
+            },
+            title = {
+                Row{
+                    Icon(modifier = Modifier.size(36.dp),painter = painterResource(id = R.drawable.baseline_home_24), contentDescription = "")
+                    Text(" Home",style= TextStyle(fontSize = 32.sp))
+
                 }
-        }
+
+            }
+        )
     }
     ,
     bottomBar = {
@@ -94,8 +140,11 @@ fun HomeScreen(navScan:()->Unit,navAnalytics:()->Unit){
 
         ) {
 
-            IconButton(modifier = Modifier.weight(1f),onClick = {  }) {
-                Icon(painterResource(id = R.drawable.baseline_dashboard_24), contentDescription = "home")
+            IconButton(modifier = Modifier.weight(1f),onClick = {
+
+
+            }) {
+                Icon(painterResource(id = R.drawable.baseline_home_24), tint = Color.White, contentDescription = "home")
             }
             IconButton(modifier = Modifier.weight(1f),onClick = navAnalytics) {
                 Icon(painterResource(id = R.drawable.baseline_analytics_24), contentDescription = "analytics")
@@ -113,50 +162,56 @@ fun HomeScreen(navScan:()->Unit,navAnalytics:()->Unit){
 
 
 
-        Box(
-           Modifier
-                .padding(vertical = 52.dp)
-        ) {
-
-             Row(
-                 Modifier
-                     .fillMaxWidth()
-                     .offset(y = (-52).dp)
-                ,
-                horizontalArrangement = Arrangement.SpaceAround
-            ){
-                Column {
-                    Text("Status", style = MaterialTheme.typography.h5)
-                    Text("Good", style = MaterialTheme.typography.h6.copy(Color.DarkGray))
-                }
-                Spacer(modifier = Modifier.width(44.dp))
-
-                Column {
-                    Text("Checkups", style = MaterialTheme.typography.h5)
-                   val checkups =  buildAnnotatedString {
-                        withStyle(SpanStyle(fontSize = 42.sp)){
-                            append("3")
-                            withStyle(SpanStyle(fontSize = 12.sp)){
-                                append("x week")
-                            }
-                        }
-                    append('\t')
-                        withStyle(SpanStyle(fontSize = 32.sp)){
-                            append("25")
-                            withStyle(SpanStyle(fontSize = 12.sp)){
-                                append("x total")
-                            }
-                        }
-
-                    }
-                    Text(checkups)
+//        Box(
+//           Modifier
+//                .padding(vertical = 52.dp)
+//        ) {
+//
+//             Row(
+//                 Modifier
+//                     .fillMaxWidth()
+//                     .offset(y = (-52).dp)
+//                ,
+//                horizontalArrangement = Arrangement.SpaceAround
+//            ){
+//                Column {
+//                    Text("Status", style = MaterialTheme.typography.h5)
+//                    Text("Good", style = MaterialTheme.typography.h6.copy(Color.DarkGray))
+//                }
+//                Spacer(modifier = Modifier.width(44.dp))
+//
+//                Column {
+//                    Text("Checkups", style = MaterialTheme.typography.h5)
+//                   val checkups =  buildAnnotatedString {
+//                        withStyle(SpanStyle(fontSize = 42.sp)){
+//                            append("3")
+//                            withStyle(SpanStyle(fontSize = 12.sp)){
+//                                append("x week")
+//                            }
+//                        }
+//                    append('\t')
+//                        withStyle(SpanStyle(fontSize = 32.sp)){
+//                            append("25")
+//                            withStyle(SpanStyle(fontSize = 12.sp)){
+//                                append("x total")
+//                            }
+//                        }
+//
+//                    }
+//                    Text(checkups)
+//                }
+//            }
+            MolesHistory(moleScans = moleScans, getNavController = getNavController, mod = Modifier)
+            if(showProfile && user!=null){
+                UserProfileDialog(user = user!!){
+                    showProfile = false
                 }
             }
-            MolesHistory(Modifier.offset(x=0.dp,y=32.dp),moleScans)
         }
         Spacer(modifier = Modifier.height(77.dp))
     }
-}
+
+
 
 
 @OptIn(ExperimentalMaterialApi::class)

@@ -1,0 +1,65 @@
+{
+  "nv": {
+    "name": "Melanocytic nevi",
+    "danger_level": "Low, but some types have a higher risk of developing into melanoma",
+    "symptoms": "Brown or black spots on the skin, may be present at birth or develop later in life",
+    "risk_factors": "Exposure to sunlight, family history of melanoma",
+    "prevention": "Protect skin from the sun, wear protective clothing, use sunscreen, avoid outdoor activities during peak sun hours",
+    "treatment": "Usually not required, but may be removed if in a cosmetically sensitive area or if dysplastic",
+    "prognosis": "Good, but individuals with dysplastic nevi or family history of melanoma should have regular skin examinations"
+  },
+  "mel": {
+    "name": "Melanoma",
+    "danger_level": "High, can spread quickly to other parts of the body",
+    "symptoms": "Asymmetrical mole with irregular borders, changes in color or size, itching or bleeding",
+    "risk_factors": "Exposure to UV radiation, family history of melanoma, fair skin, history of sunburns",
+    "prevention": "Protect skin from the sun, avoid tanning beds",
+    "treatment": "Surgical excision, radiation therapy, immunotherapy, targeted therapy",
+    "prognosis": "Varies depending on the stage of the cancer at diagnosis, but early detection and treatment are key to a positive prognosis"
+  },
+  "bkl": {
+    "name": "Benign keratosis",
+    "danger_level": "Low, usually harmless",
+    "symptoms": "Thick, scaly patches of skin",
+    "risk_factors": "Exposure to sunlight, fair skin",
+    "prevention": "Protect skin from the sun, wear protective clothing, use sunscreen, avoid outdoor activities during peak sun hours",
+    "treatment": "May be removed if in a cosmetically sensitive area or causing discomfort",
+    "prognosis": "Good, as this type of skin growth is usually harmless"
+  },
+  "bcc": {
+    "name": "Basal cell carcinoma",
+    "danger_level": "Low to moderate, can invade surrounding tissues if left untreated",
+    "symptoms": "Small, shiny bump or reddish patch of skin that may bleed easily",
+    "risk_factors": "Exposure to sunlight, fair skin, history of sunburns, family history of skin cancer",
+    "prevention": "Protect skin from the sun, wear protective clothing, use sunscreen, avoid outdoor activities during peak sun hours",
+    "treatment": "Surgical excision, cryotherapy, Mohs surgery, radiation therapy",
+    "prognosis": "Good, but early detection and treatment are important for a positive outcome"
+  },
+  "akiec": {
+    "name": "Actinic Keratoses (Solar Keratoses) and intraepithelial Carcinoma (Bowen’s disease)",
+    "danger_level": "Low to moderate, can develop into squamous cell carcinoma if left untreated",
+    "symptoms": "Dry, scaly patches of skin",
+    "risk_factors": "Exposure to sunlight, fair skin, history of sunburns",
+    "prevention": "Protect skin from the sun, wear protective clothing, use sunscreen, avoid outdoor activities during peak sun hours",
+    "treatment": "Cryotherapy, topical medications, surgical excision",
+    "prognosis": "Good, but early detection and treatment are important for a positive outcome"
+  },
+  "vasc": {
+    "name": "Vascular skin lesions",
+    "danger_level": "Low, usually harmless",
+    "symptoms": "Red or purple birthmarks or lesions",
+    "risk_factors": "Unknown",
+    "prevention": "Not preventable",
+    "treatment": "Usually not required, but may be removed for cosmetic reasons",
+    "prognosis": "Good, as this type of skin growth is usually harmless"
+  },
+  "df": {
+    "name": "Dermatofibroma",
+    "danger_level": "Low, usually harmless",
+    "symptoms": "Small, hard bump on the skin, may be discolored",
+    "risk_factors": "Unknown",
+    "prevention": "Not preventable",
+    "treatment": "Usually not required, but may be removed for cosmetic reasons or if causing discomfort",
+    "prognosis": "Good, as this type of skin growth is usually harmless"
+  }
+}
