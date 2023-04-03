@@ -11,27 +11,30 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import te.mini_project.skincancerdetection.ui.screens.ResultScreen
 import te.mini_project.skincancerdetection.ui.theme.Black200
 import te.mini_project.skincancerdetection.ui.theme.Black700
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ResultModalBottomSheet(navToResults:()->Unit, btnState: ModalBottomSheetState,title:String, btnText:String){
+fun ResultModalBottomSheet(navToResults:()->Unit, btnState: ModalBottomSheetState,title:String, btnText:String, content: @Composable ()->Unit){
 
 
-    ModalBottomSheetLayout(sheetState = btnState,sheetContent = {
+    ModalBottomSheetLayout(sheetState = btnState, sheetShape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),sheetContent = {
+
         Spacer(modifier = Modifier.height(10.dp))
         LinearProgressIndicator( color = Color.Red, progress = 1.0f, modifier = Modifier.height(10.dp).clip(
-            RoundedCornerShape(5.dp)
-        ))
+            RoundedCornerShape(7.dp)
+        ).align(Alignment.CenterHorizontally))
         Spacer(modifier = Modifier.height(20.dp))
-        Text(modifier = Modifier.align(Alignment.CenterHorizontally),text=title, style = MaterialTheme.typography.h4)
+        Text(modifier = Modifier.align(Alignment.CenterHorizontally).padding(12.dp),text=title, style = MaterialTheme.typography.h4)
         Spacer(modifier = Modifier.height(20.dp))
-        Button(modifier = Modifier.align(Alignment.CenterHorizontally),onClick = navToResults){
+        Button(modifier = Modifier.align(Alignment.CenterHorizontally).padding(12.dp),onClick = navToResults){
             Text(btnText, style = MaterialTheme.typography.h6)
         }
     }) {
+        content()
     }
 }
 

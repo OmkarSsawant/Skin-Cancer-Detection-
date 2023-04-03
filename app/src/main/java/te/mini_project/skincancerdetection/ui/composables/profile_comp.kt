@@ -39,6 +39,7 @@ fun UserProfileDialog(user: FirebaseUser,onDismissRequest :()->Unit) {
                 Text(text = user.displayName ?: "", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                 Spacer(modifier = Modifier.height(8.dp))
                 user.email?.let {
+                    if(it.isEmpty()) return@let
                     Text(text = "Email: $it", fontSize = 16.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                 }

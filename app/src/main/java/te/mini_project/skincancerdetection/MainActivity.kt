@@ -71,6 +71,9 @@ class MainActivity : ComponentActivity() {
                AuthUI.getInstance()
                    .createSignInIntentBuilder()
                    .setIsSmartLockEnabled(false)
+                   .setTheme(R.style.Theme_SkinCancerDetection)
+                   .setLogo(R.drawable.logo)
+
                    .setAvailableProviders(providers)
                    .build(),
                100
@@ -91,12 +94,15 @@ class MainActivity : ComponentActivity() {
                 android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 android.Manifest.permission.CAMERA,
                 android.Manifest.permission.RECORD_AUDIO
-            ).all { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED })
-        requestPermissions(arrayOf(
-            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            android.Manifest.permission.CAMERA,
-            android.Manifest.permission.RECORD_AUDIO
-        ),100);
+            ).all { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }) {
+            requestPermissions(
+                arrayOf(
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    android.Manifest.permission.CAMERA,
+                    android.Manifest.permission.RECORD_AUDIO
+                ), 100
+            );
+        }
 //        else{
 //            Toast.makeText(this,"Please grant permission to proceed",Toast.LENGTH_SHORT).show()
 //            finish()

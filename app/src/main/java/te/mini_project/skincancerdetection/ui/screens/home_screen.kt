@@ -95,7 +95,7 @@ fun HomeScreen(navScan:()->Unit,navAnalytics:()->Unit,getNavController: ()->NavC
                     }) {
                         Icon(painter = painterResource(id = android.R.drawable.stat_notify_sync), contentDescription = "send mail icon")
                     }
-                    if(user==null){
+                    if(user==null || user!!.photoUrl ==null || user!!.displayName!!.isEmpty()){
                         Box(
                             Modifier
                                 .clickable {
@@ -107,7 +107,7 @@ fun HomeScreen(navScan:()->Unit,navAnalytics:()->Unit,getNavController: ()->NavC
                             Text(modifier = Modifier.padding(12.dp),text="GT", style = TextStyle(Color.White))
                         }
                     }
-                    else{
+                    else if(user!!.photoUrl !=null){
                         Image(
 
                             painter = rememberImagePainter(user!!.photoUrl),
@@ -120,13 +120,26 @@ fun HomeScreen(navScan:()->Unit,navAnalytics:()->Unit,getNavController: ()->NavC
                                 }
                         )
                     }
+                    else{
+                        Box(
+                            Modifier
+                                .clickable {
+                                    showProfile = true
+                                }
+                                .clip(CircleShape)
+                                .background(color = Color(dynamicColor))
+                        ) {
+                            if(user!!.displayName!=null){
+                                Text(modifier = Modifier.padding(12.dp),text=user!!.displayName!!.substring(0,2) , style = TextStyle(Color.White))
+                            }
+                        }
+                    }
 
             },
             title = {
                 Row{
-                    Icon(modifier = Modifier.size(36.dp),painter = painterResource(id = R.drawable.baseline_home_24), contentDescription = "")
-                    Text(" Home",style= TextStyle(fontSize = 32.sp))
-
+                    Icon(painter = painterResource(id = R.drawable.baseline_home_24), contentDescription = "")
+                    Text(" Home")
                 }
 
             }

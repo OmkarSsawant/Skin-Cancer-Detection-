@@ -46,8 +46,8 @@ fun AnalyticsScreen(dao:SkinCancerDao,getNavController:()->NavController){
     Scaffold(
         topBar = {
             TopAppBar {
-                Icon(modifier = Modifier.size(36.dp),painter = painterResource(id = R.drawable.baseline_analytics_24), contentDescription = "")
-                Text(" Report Analytics",style= TextStyle(fontSize = 32.sp, color = Color.White))
+                Icon(painter = painterResource(id = R.drawable.baseline_analytics_24), contentDescription = "")
+                Text(" Report Analytics")
             }
         },
 

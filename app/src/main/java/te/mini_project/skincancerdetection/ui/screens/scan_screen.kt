@@ -32,15 +32,15 @@ fun ScanScreen(setUpCam:(SurfaceProvider,ModalBottomSheetState)->Unit,navToResul
     val mbss = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     ResultModalBottomSheet(btnState = mbss, title = "You need to consult a Doctor!", btnText = "Show Results",
         navToResults = navToResults
-    )
+    ) {
 
         Scaffold {
-                AndroidView(modifier = Modifier.fillMaxSize(), factory = {
-                    val cameraPreviewView = PreviewView(it)
-                    setUpCam(cameraPreviewView.surfaceProvider,mbss)
-                    cameraPreviewView
-                })
+            AndroidView(modifier = Modifier.fillMaxSize(), factory = {
+                val cameraPreviewView = PreviewView(it)
+                setUpCam(cameraPreviewView.surfaceProvider, mbss)
+                cameraPreviewView
+            })
         }
 
-
+    }
 }
