@@ -73,6 +73,8 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     implementation platform('com.google.firebase:firebase-bom:31.2.0')
     implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.google.firebase:firebase-firestore-ktx'
+
     def nav_version = "2.5.3"
     implementation("androidx.navigation:navigation-compose:$nav_version")
 
@@ -92,7 +94,6 @@ dependencies {
     implementation "androidx.room:room-ktx:2.5.1"
     implementation "androidx.room:room-runtime:2.5.1"
     kapt "androidx.room:room-compiler:2.5.1"
-
     implementation "io.coil-kt:coil-compose:1.3.2"
     //   tensorflow
     implementation 'org.tensorflow:tensorflow-lite-support:0.1.0'

@@ -47,10 +47,11 @@ import te.mini_project.skincancerdetection.R
 import te.mini_project.skincancerdetection.ui.composables.MolesHistory
 import te.mini_project.skincancerdetection.room.SkinCancerDatabase
 import te.mini_project.skincancerdetection.room.models.MoleScan
+import te.mini_project.skincancerdetection.vm.SkinCancerDetectorVM
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter", "SuspiciousIndentation")
 @Composable
-fun HomeScreen(navScan:()->Unit,navAnalytics:()->Unit,getNavController: ()->NavController){
+fun HomeScreen(vm:SkinCancerDetectorVM,navScan:()->Unit,navAnalytics:()->Unit,getNavController: ()->NavController){
     val scaffoldHost = rememberScaffoldState()
     var user:FirebaseUser? by remember {
         mutableStateOf(null)
@@ -68,8 +69,7 @@ fun HomeScreen(navScan:()->Unit,navAnalytics:()->Unit,getNavController: ()->NavC
 
     LaunchedEffect(key1 = "" ){
             withContext(Dispatchers.IO){
-                val db = SkinCancerDatabase.getInstance(context)
-                db.skinCancerDao().observeMolesRecord().collect{
+                vm.watchMoleRecord().collect{
                     moleScans = it
                 }
             }
@@ -85,8 +85,7 @@ fun HomeScreen(navScan:()->Unit,navAnalytics:()->Unit,getNavController: ()->NavC
                         GlobalScope.launch {
                             scaffoldHost.snackbarHostState.showSnackbar("Refreshing")
                             withContext(Dispatchers.IO){
-                                val db = SkinCancerDatabase.getInstance(context)
-                                db.skinCancerDao().observeMolesRecord().collect{
+                                vm.watchMoleRecord().collect{
                                     moleScans = it
                                 }
                             }

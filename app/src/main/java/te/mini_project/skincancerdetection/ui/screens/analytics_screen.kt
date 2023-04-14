@@ -15,10 +15,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.room.Dao
 import com.himanshoe.charty.bar.BarChart
@@ -33,15 +35,16 @@ import com.himanshoe.charty.point.model.PointData
 import kotlinx.coroutines.flow.collect
 import te.mini_project.skincancerdetection.R
 import te.mini_project.skincancerdetection.room.SkinCancerDao
+import te.mini_project.skincancerdetection.room.SkinCancerDatabase
 import te.mini_project.skincancerdetection.room.models.MoleScan
 import te.mini_project.skincancerdetection.ui.theme.Black500
+import te.mini_project.skincancerdetection.vm.SkinCancerDetectorVM
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun AnalyticsScreen(dao:SkinCancerDao,getNavController:()->NavController){
-
-    val moles : List<MoleScan> by  dao.observeMolesRecord().collectAsState(initial = emptyList())
+fun AnalyticsScreen(vm:SkinCancerDetectorVM ,getNavController:()->NavController){
+    val moles : List<MoleScan> by  vm.watchMoleRecord().collectAsState(initial = emptyList())
 
     Scaffold(
         topBar = {
@@ -148,7 +151,8 @@ fun AnalyticsScreen(dao:SkinCancerDao,getNavController:()->NavController){
 
                 Log.i("TAG", "AnalyticsScreen: $diseaseAndCount")
                 Card{PointChart(
-                    modifier = Modifier .padding(32.dp)
+                    modifier = Modifier
+                        .padding(32.dp)
                         .fillMaxWidth()
                         .height(200.dp)
                         .scrollable(rememberScrollableState(

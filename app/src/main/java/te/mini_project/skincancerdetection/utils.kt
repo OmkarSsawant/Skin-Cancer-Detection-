@@ -2,6 +2,7 @@ package te.mini_project.skincancerdetection
 
 import android.opengl.ETC1.getHeight
 import android.opengl.ETC1.getWidth
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.text.capitalize
@@ -24,6 +25,9 @@ fun Int.onlyIntUppersString() = if(this > 0 ) this.toString() else ""
 //        mask.getPixel(xBm, yBm)
 //    }
 //}
+//TODO: Need to change
+val SAFE_SKIN_DISEASES = arrayOf("mel, Melanoma","vasc, Vascular skin lesion")
+typealias  ShowResultBSCallback = (Color, String) -> Unit
 
 fun String.spaced():String{
     val str = if(!contains(' ') && contains(Regex("[A-Z]"))) {

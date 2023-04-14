@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
+import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -45,6 +47,7 @@ import te.mini_project.skincancerdetection.room.SkinCancerDatabase
 import te.mini_project.skincancerdetection.room.models.MoleScan
 import te.mini_project.skincancerdetection.ui.screens.*
 import te.mini_project.skincancerdetection.ui.theme.SkinCancerDetectionTheme
+import te.mini_project.skincancerdetection.vm.SkinCancerDetectorVM
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -55,7 +58,9 @@ class MainActivity : ComponentActivity() {
     private lateinit var skinCancerDetector : SkinCancerDetector
     private lateinit  var executors :ExecutorService
     private lateinit var composeCoroutineScope: CoroutineScope
-    private lateinit var db: SkinCancerDatabase
+
+    private val vm :SkinCancerDetectorVM by viewModels()
+
     var reports: Map<String,Float>?=null
     val providers = listOf( // below is the line for adding
         // email and password authentication.
@@ -82,6 +87,7 @@ class MainActivity : ComponentActivity() {
 
    }
 
+    var showBtmSheet : ShowResultBSCallback ?=null
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -108,7 +114,6 @@ class MainActivity : ComponentActivity() {
 //            finish()
 //        }
 
-        db = SkinCancerDatabase.getInstance(applicationContext)
         setContent {
             composeCoroutineScope = rememberCoroutineScope()
             val navController = rememberNavController()
@@ -160,7 +165,7 @@ class MainActivity : ComponentActivity() {
                                 ResultScreen(results = results, getNavigator = { navController })
                         }
                         composable("analytics"){
-                            AnalyticsScreen(dao = db.skinCancerDao()){ navController }
+                            AnalyticsScreen{ navController }
                         }
                         composable("details/{result}"){
                             val gson = GsonBuilder()
@@ -230,14 +235,10 @@ class MainActivity : ComponentActivity() {
         PhoneAuthProvider.verifyPhoneNumber(phoneOpts)
     }
 
-    @OptIn(ExperimentalMaterialApi::class)
-    var mbss:ModalBottomSheetState?=null
-
-
 
     @OptIn(ExperimentalMaterialApi::class)
-    private fun setupCam(sv:SurfaceProvider,mbss:ModalBottomSheetState)  : Unit{
-        this.mbss = mbss
+    private fun setupCam(sv:SurfaceProvider,mbss:ShowResultBSCallback)  : Unit{
+        this.showBtmSheet = mbss
         ProcessCameraProvider.getInstance(this)
             .let { cf ->
                 cf.addListener({
@@ -283,23 +284,29 @@ class MainActivity : ComponentActivity() {
                 if(reports!!.values.any { it > 0.9f })
                 //Bottom Sheet and show `show results` button
                 {
-                    composeCoroutineScope.launch(Dispatchers.IO){
-                        if(mbss?.isVisible == false)
-                        {
-                            //Save Generated Result
-                            db.skinCancerDao().insertRecord(MoleScan().apply {
+
+                    if(noCancerDisease(reports!!)){
+                            showBtmSheet?.invoke(Color.Green,"You are Safe!")
+                    }else{
+                        composeCoroutineScope.launch(Dispatchers.IO){
+                                //Save Generated Result
+                            val ms  =  MoleScan().apply {
                                 scanDate = Date()
                                 scanResults = mapToResults(reports!!)
-                            })
+                            }
+                            FirebaseAuth.getInstance().currentUser?.let {
+                                vm.saveMoleRecord(ms)
+                            }
 
-                            //Navigate to Results Screen
-                            withContext(Dispatchers.Main){
-                                navigationgToResults = true
-                                mbss?.show()
+                                //Navigate to Results Screen
+                                withContext(Dispatchers.Main){
+                                    navigationgToResults = true
+                                    showBtmSheet?.invoke(Color.Red,"You need to concern doctor")
 
                             }
                         }
                     }
+
 
                 }
                 }
@@ -309,6 +316,8 @@ class MainActivity : ComponentActivity() {
                 image.close()
             }
         }
+
+        private fun noCancerDisease(reports: Map<String, Float>): Boolean  =  reports.maxBy { it.value }.key in SAFE_SKIN_DISEASES
     }
 
 
@@ -319,8 +328,15 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        vm.updateFirestore()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+
+
         if(::executors.isInitialized)
             executors.shutdownNow()
 
@@ -328,3 +344,4 @@ class MainActivity : ComponentActivity() {
             skinCancerDetector.dispose()
     }
 }
+
