@@ -89,17 +89,19 @@ fun AnalyticsScreen(vm:SkinCancerDetectorVM ,getNavController:()->NavController)
                     .mapIndexed { index, ms -> Entry(monthDF.format(ms.scanDate), index.toFloat(), ms.scanResults.maxBy { it.accuracy }.accuracy) }
                     .let { ChartEntryModelProducer(it) }
 
-                Card {
-                    Chart(chart = columnChart(), model = accuracyEntryModelProducer.getModel())
+                Card() {
+                    Chart(modifier=Modifier.padding(12.dp),chart = columnChart(), model = accuracyEntryModelProducer.getModel())
                 }
+                Spacer(Modifier.height(30.dp))
+                Text(modifier = Modifier.padding(28.dp),text="Scan Usage")
 
                 val scanCountEntryModelProducer = moles
                     .groupBy { dff.format(it.scanDate) }.map { it.key to it.value.size }
                     .mapIndexed { index, (dt,scanCount) -> Entry(dt, index.toFloat(), scanCount.toFloat()) }
                     .let { ChartEntryModelProducer(it) }
 
-                Card {
-                    Chart(chart = lineChart(), model = scanCountEntryModelProducer.getModel())
+                Card() {
+                    Chart(modifier = Modifier.padding(12.dp),chart = lineChart(), model = scanCountEntryModelProducer.getModel())
                 }
 
                 //Chart Accuracy
@@ -121,7 +123,6 @@ fun AnalyticsScreen(vm:SkinCancerDetectorVM ,getNavController:()->NavController)
 //                        )
 //                }
 
-                Text(modifier = Modifier.padding(28.dp),text="Scan Usage")
 
 //                Log.i("TAG", "AnalyticsScreen: $groupedByDate")
 //
