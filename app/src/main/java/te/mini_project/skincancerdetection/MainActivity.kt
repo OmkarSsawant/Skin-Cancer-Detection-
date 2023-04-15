@@ -142,7 +142,7 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("analytics")
                             }, navScan = {
                                 navController.navigate("scan")
-                            }, getNavController = {navController})
+                            }, getNavController = {navController}, vm = vm)
                         }
                         composable("scan"){
                             ScanScreen(setUpCam = { sv,mbss-> setupCam(sv,mbss) }){
@@ -165,7 +165,7 @@ class MainActivity : ComponentActivity() {
                                 ResultScreen(results = results, getNavigator = { navController })
                         }
                         composable("analytics"){
-                            AnalyticsScreen{ navController }
+                            AnalyticsScreen(vm=vm){ navController }
                         }
                         composable("details/{result}"){
                             val gson = GsonBuilder()

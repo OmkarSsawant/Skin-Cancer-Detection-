@@ -26,7 +26,7 @@ fun Int.onlyIntUppersString() = if(this > 0 ) this.toString() else ""
 //    }
 //}
 //TODO: Need to change
-val SAFE_SKIN_DISEASES = arrayOf("mel, Melanoma","vasc, Vascular skin lesion")
+val SAFE_SKIN_DISEASES = arrayOf("vasc, Vascular skin lesion")
 typealias  ShowResultBSCallback = (Color, String) -> Unit
 
 fun String.spaced():String{

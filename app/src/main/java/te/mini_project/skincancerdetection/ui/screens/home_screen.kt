@@ -68,10 +68,10 @@ fun HomeScreen(vm:SkinCancerDetectorVM,navScan:()->Unit,navAnalytics:()->Unit,ge
     val context = LocalContext.current.applicationContext
 
     LaunchedEffect(key1 = "" ){
-            withContext(Dispatchers.IO){
+                Log.i("TAG", "HomeScreen: collecting...")
                 vm.watchMoleRecord().collect{
+                    Log.i("TAG", "HomeScreen-collect: $it")
                     moleScans = it
-                }
             }
     }
 

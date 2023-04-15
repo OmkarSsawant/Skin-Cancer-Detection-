@@ -11,6 +11,9 @@ import java.util.Date
 @Entity(tableName = "mole_record")
 @TypeConverters(ResultConvertor::class)
  class MoleScan {
+
+    constructor(){}//for firestore data injection
+
     @ColumnInfo
     @PrimaryKey(autoGenerate = true)
     var id:Int = 0
