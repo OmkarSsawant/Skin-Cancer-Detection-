@@ -1,5 +1,8 @@
 package te.mini_project.skincancerdetection.ui.screens
 
+import android.util.Log
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -13,11 +16,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
+import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.column.columnChart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
-import com.patrykandpatrick.vico.core.entry.ChartEntry
-import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
+import com.patrykandpatrick.vico.core.entry.*
 import te.mini_project.skincancerdetection.R
 import te.mini_project.skincancerdetection.room.models.MoleScan
 import te.mini_project.skincancerdetection.vm.SkinCancerDetectorVM
@@ -88,20 +92,28 @@ fun AnalyticsScreen(vm:SkinCancerDetectorVM ,getNavController:()->NavController)
                 val accuracyEntryModelProducer = moles
                     .mapIndexed { index, ms -> Entry(monthDF.format(ms.scanDate), index.toFloat(), ms.scanResults.maxBy { it.accuracy }.accuracy) }
                     .let { ChartEntryModelProducer(it) }
+//                val accuracyModel = entryModelOf(
+//                    moles.map { it.scanResults.maxBy { it.accuracy }.accuracy }.mapIndexed {i,a-> FloatEntry(i.toFloat(),a * 16f) }
+//                )
 
-                Card() {
-                    Chart(modifier=Modifier.padding(12.dp),chart = columnChart(), model = accuracyEntryModelProducer.getModel())
+                Card(Modifier.scrollable(rememberScrollState(),Orientation.Horizontal)) {
+                    Chart(modifier=Modifier.scrollable(rememberScrollState(),Orientation.Horizontal),chart = columnChart(), model = accuracyEntryModelProducer.getModel() ,startAxis = startAxis(),
+                        bottomAxis = bottomAxis(),)
                 }
                 Spacer(Modifier.height(30.dp))
                 Text(modifier = Modifier.padding(28.dp),text="Scan Usage")
 
                 val scanCountEntryModelProducer = moles
                     .groupBy { dff.format(it.scanDate) }.map { it.key to it.value.size }
-                    .mapIndexed { index, (dt,scanCount) -> Entry(dt, index.toFloat(), scanCount.toFloat()) }
-                    .let { ChartEntryModelProducer(it) }
+                    .mapIndexed {i,v-> entryOf(i,v.second) }
 
-                Card() {
-                    Chart(modifier = Modifier.padding(12.dp),chart = lineChart(), model = scanCountEntryModelProducer.getModel())
+                    .let { ChartEntryModelProducer(it) }
+                Log.i("TAG", "AnalyticsScreen: ${moles
+                    .groupBy { dff.format(it.scanDate) }.map { it.key to it.value.size }} ")
+//                val useCountModel = entryModelOf(moles.groupBy{ dff.format(it.scanDate) }.map { it.key to it.value.size }.mapIndexed { index, (d,c) ->  FloatEntry(index.toFloat(),c.toFloat()) })
+                Card(Modifier.scrollable(rememberScrollState(),Orientation.Horizontal)) {
+                    Chart(modifier = Modifier.scrollable(rememberScrollState(),Orientation.Horizontal),chart = columnChart(), model = scanCountEntryModelProducer.getModel(), startAxis = startAxis(),
+                        bottomAxis = bottomAxis(),)
                 }
 
                 //Chart Accuracy
@@ -174,7 +186,7 @@ fun AnalyticsScreen(vm:SkinCancerDetectorVM ,getNavController:()->NavController)
 //                    }.toList() // list of PointData
 //                )
 //                }
-                Spacer(Modifier.height(30.dp))
+                Spacer(Modifier.height(90.dp))
 
             }
         }
