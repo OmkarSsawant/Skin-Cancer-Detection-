@@ -53,6 +53,8 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
+private const val RESCAN_DELAY = 1000L
+
 class MainActivity : ComponentActivity() {
 
     private lateinit var skinCancerDetector : SkinCancerDetector
@@ -86,6 +88,7 @@ class MainActivity : ComponentActivity() {
        }//logged Out
 
    }
+    var navigationgToResults = false
 
     var showBtmSheet : ShowResultBSCallback ?=null
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -153,13 +156,14 @@ class MainActivity : ComponentActivity() {
                                 navigationgToResults = false
                             }
                         }
-                        composable("show_results/{results}"){
+                        composable("show_results/{results}"){ navBackStackEntry ->
                             val gson = GsonBuilder()
                                 .create()
-                            val aresults = it.arguments?.getString("results") ?: return@composable Box{}
+                            val aresults = navBackStackEntry.arguments?.getString("results") ?: return@composable Box{}
                             val tv = object: TypeToken<Map<String, Float>>() {}
                                 val results = gson.fromJson(aresults,tv)
                                     .map { e -> Result(e.key,e.value) }
+
                                     .toList()
                             Log.i(TAG, "onCreate: $results")
                                 ResultScreen(results = results, getNavigator = { navController })
@@ -265,27 +269,28 @@ class MainActivity : ComponentActivity() {
 
 
     var lastTime : Long = 0L
-    var navigationgToResults = false
 
 
 
     inner class SkinCancerAnalyzer : ImageAnalysis.Analyzer{
         @OptIn(ExperimentalMaterialApi::class)
         override fun analyze(image: ImageProxy) {
-            if(navigationgToResults){
-                return
-            }
+//            if(navigationgToResults){
+//                return
+//            }
+            Log.i(TAG, "analyze: $reports")
             val now = System.currentTimeMillis()
-            if(now - lastTime > 2000L){
+            if(now - lastTime > RESCAN_DELAY){
                  reports =  skinCancerDetector.detect(image)
                 if (reports != null) {
-                    Log.i(TAG, "analyze: $reports")
+                    Log.i(TAG, "analyzed: $reports")
                     //Some Event Trigger that will Open Results Screen
                 if(reports!!.values.any { it > 0.9f })
                 //Bottom Sheet and show `show results` button
                 {
 
                     if(noCancerDisease(reports!!)){
+                        Log.i(TAG, "analyze: No Cancer Disease Detected")
                             showBtmSheet?.invoke(Color.Green,"You are Safe!")
                     }else{
                         composeCoroutineScope.launch(Dispatchers.IO){

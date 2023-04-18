@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.intl.Locale
 import te.mini_project.skincancerdetection.data.Result
+import te.mini_project.skincancerdetection.data.SkinCancerModelLabeler
 import te.mini_project.skincancerdetection.room.models.MoleScan
 import java.sql.Time
 import java.util.*
@@ -25,8 +26,12 @@ fun Int.onlyIntUppersString() = if(this > 0 ) this.toString() else ""
 //        mask.getPixel(xBm, yBm)
 //    }
 //}
-//TODO: Need to change
-val SAFE_SKIN_DISEASES = arrayOf("vasc, Vascular skin lesion")
+val SAFE_SKIN_DISEASES = arrayOf(
+    SkinCancerModelLabeler.getSkinClass(2),
+    SkinCancerModelLabeler.getSkinClass(3),
+    SkinCancerModelLabeler.getSkinClass(5),
+    SkinCancerModelLabeler.getSkinClass(6),
+)
 typealias  ShowResultBSCallback = (Color, String) -> Unit
 
 fun String.spaced():String{

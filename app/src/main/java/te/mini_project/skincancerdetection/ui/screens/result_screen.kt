@@ -33,7 +33,7 @@ fun ResultScreen(results:List<UiResult> = mockResults,getNavigator:()->NavContro
                 contentPadding = PaddingValues(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ){
-                items(results.subList(0,3)){
+                items(results.sortedByDescending { it.accuracy } .subList(0,3)){
                     Card(elevation = 12.dp){
                         ListItem(text =  {
                             Button(
