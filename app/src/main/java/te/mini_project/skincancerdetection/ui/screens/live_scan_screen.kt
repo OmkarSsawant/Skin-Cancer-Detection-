@@ -21,9 +21,12 @@ fun LiveScanScreen(setUpCam:(SurfaceProvider, ShowResultBSCallback)->Unit, navTo
     var sheetTitle by remember{ mutableStateOf("") }
     var sheetTitleColor by remember{ mutableStateOf(Color.White) }
     val coroutineScope = rememberCoroutineScope()
-    ResultModalBottomSheet(btnState = mbss, title = sheetTitle, btnText = "Show Results",
-        navToResults = navToResults
-    , color = sheetTitleColor) {
+    ResultModalBottomSheet(
+        navToResults = navToResults, color = sheetTitleColor, btnState = mbss,
+        title = sheetTitle
+    ,
+        btnText = "Show Results",
+    ) {
 
         Scaffold {
             AndroidView(modifier = Modifier.fillMaxSize(), factory = {
@@ -32,7 +35,7 @@ fun LiveScanScreen(setUpCam:(SurfaceProvider, ShowResultBSCallback)->Unit, navTo
                     sheetTitle = s
                     sheetTitleColor = c
                     coroutineScope.launch {
-                        if(!mbss.isVisible)
+                        if (!mbss.isVisible)
                             mbss.show()
                     }
                 }

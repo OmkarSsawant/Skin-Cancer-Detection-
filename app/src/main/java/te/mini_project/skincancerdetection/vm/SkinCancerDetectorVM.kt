@@ -31,7 +31,7 @@ class SkinCancerDetectorVM(app:Application) : AndroidViewModel(app) {
         getApplication<Application>().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     }
 
-    private fun networkConnected():Boolean{
+    public fun networkConnected():Boolean{
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             cm.activeNetwork!=null
         }else cm.isActiveNetworkMetered

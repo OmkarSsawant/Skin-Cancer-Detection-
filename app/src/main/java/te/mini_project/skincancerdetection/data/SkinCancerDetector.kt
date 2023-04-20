@@ -8,11 +8,15 @@ import android.hardware.SensorManager
 import android.media.Image
 import android.view.OrientationEventListener
 import androidx.camera.core.ImageProxy
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.ImageBitmap
+import com.patrykandpatrick.vico.core.extension.ceil
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.model.Model.Options
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
+import te.mini_project.skincancerdetection.imageProxyToBitmap
 import te.mini_project.skincancerdetection.ml.Model
-import te.mini_project.skincancerdetection.toBitmap
 import java.io.ByteArrayOutputStream
 
 class SkinCancerDetector(context:Context) : OrientationEventListener(context,SensorManager.SENSOR_DELAY_NORMAL) {
@@ -23,8 +27,27 @@ class SkinCancerDetector(context:Context) : OrientationEventListener(context,Sen
 
     @SuppressLint("UnsafeOptInUsageError")
     fun detect(imgP: ImageProxy): Map<String, Float>? {
-        val mBITMAP = imgP.toBitmap() ?: return null
+//        val w = imgP.width.toFloat()
+//        val h = imgP.height.toFloat()
+//        val center:Rect = Rect(
+//            (w/2-100f).toInt(),(h/2-100f).toInt(),
+//            (w/2+100f).toInt(),(h/2+100f).toInt())
+//
+//        imgP.setCropRect(center)
+        val mBITMAP = imageProxyToBitmap(imgP,null) ?: return null
         return detectBitmap(mBITMAP)
+    }
+    data class CroppedResult(val res: Map<String, Float>? ,val img : Bitmap? )
+    @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
+    fun  detectCropped(imgP: ImageProxy):CroppedResult?{
+                val w = imgP.width.toFloat()
+        val h = imgP.height.toFloat()
+        val center:Rect = Rect(
+            (w/2-100f).toInt(),(h/2-100f).toInt(),
+            (w/2+100f).toInt(),(h/2+100f).toInt())
+
+        val mBITMAP = imageProxyToBitmap(imgP,center)
+        return mBITMAP?.let { CroppedResult(detectBitmap(mBITMAP),mBITMAP) }
     }
 
     private fun detectBitmap(bitmap: Bitmap):Map<String,Float>?{
@@ -41,7 +64,7 @@ class SkinCancerDetector(context:Context) : OrientationEventListener(context,Sen
     }
 
     private fun prepareModelInput(mBITMAP:Bitmap): TensorBuffer? {
-        val resized = Bitmap.createScaledBitmap(mBITMAP,224,224,true)
+        val resized = Bitmap.createScaledBitmap(mBITMAP,32,32,true)
         val tensorImage = TensorImage(DataType.FLOAT32)
         tensorImage.load(resized)
         return tensorImage.tensorBuffer

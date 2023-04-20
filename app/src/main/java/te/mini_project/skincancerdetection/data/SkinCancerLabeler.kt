@@ -1,7 +1,4 @@
 package te.mini_project.skincancerdetection.data
-
-
-
 object SkinCancerModelLabeler {
     fun getSkinClass(i:Int):String{
         return when(i)

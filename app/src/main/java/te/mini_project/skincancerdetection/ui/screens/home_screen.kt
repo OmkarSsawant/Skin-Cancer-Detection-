@@ -239,7 +239,7 @@ fun ImagedReport(){
     for ( m in moles){
         Chip(modifier = Modifier
             .offset(m.x.dp, m.y.dp)
-            .zIndex(4f),onClick = { /*TODO*/ }) {
+            .zIndex(4f),onClick = {  }) {
             Text(" + ")
         }
     }

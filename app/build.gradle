@@ -104,6 +104,8 @@ dependencies {
 
     implementation "com.himanshoe:charty:1.0.1"
 
+    implementation 'org.jfree:jfreechart:1.5.3'
+    implementation 'com.itextpdf:itext7-core:7.1.15'
 
 
     implementation "com.patrykandpatrick.vico:core:1.6.5"

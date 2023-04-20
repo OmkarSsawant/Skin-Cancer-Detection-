@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.ImageFormat
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -105,6 +106,7 @@ class MainActivity : ComponentActivity() {
        capturer =  ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
             .setIoExecutor(executors)
+           .setBufferFormat(ImageFormat.YUV_420_888)
             .setCameraSelector(CameraSelector.DEFAULT_BACK_CAMERA)
             .build()
 

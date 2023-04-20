@@ -20,18 +20,15 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.intl.Locale
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.shreyaspatil.capturable.controller.CaptureController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import te.mini_project.skincancerdetection.MainActivity.Companion.TAG
@@ -55,12 +52,18 @@ fun ScanScreen(setUpCam:(Preview.SurfaceProvider, ShowResultBSCallback)->Unit,ge
     var sheetTitle by remember{ mutableStateOf("") }
     var sheetTitleColor by remember{ mutableStateOf(Color.White) }
     val coroutineScope = rememberCoroutineScope()
+    var scanImage by remember {
+        mutableStateOf<ImageBitmap?>(null)
+    }
+    val scaffoldHost = rememberScaffoldState()
     ResultModalBottomSheet(btnState = mbss, title = sheetTitle, btnText = "Show Results",
         navToResults = navToResults
-    , color = sheetTitleColor) {
+    , color = sheetTitleColor,image=scanImage) {
 
         Scaffold(
+
             floatingActionButtonPosition = FabPosition.Center,
+            scaffoldState = scaffoldHost,
             floatingActionButton = {
                val ctx =  LocalContext.current
                 ExtendedFloatingActionButton(
@@ -72,8 +75,10 @@ fun ScanScreen(setUpCam:(Preview.SurfaceProvider, ShowResultBSCallback)->Unit,ge
                             override fun onCaptureSuccess(image: ImageProxy) {
                                 super.onCaptureSuccess(image)
                                 Log.i(TAG, "onCaptureSuccess: YES")
-                                val reports = detector.detect(image)
-                                Log.i(TAG, "onCaptureSuccess: $reports")
+                                val res = detector.detectCropped(image)
+                                val (reports,sImage)  =res ?: return
+                                scanImage = sImage?.asImageBitmap()
+                                Log.i(TAG, "onCaptureSuccess: $scanImage")
 
                                 reports?.let { map ->
                                     setReports(map)
@@ -95,7 +100,11 @@ fun ScanScreen(setUpCam:(Preview.SurfaceProvider, ShowResultBSCallback)->Unit,ge
                                                     scanDate = Date()
                                                     scanResults = mapToResults(reports)
                                                 }
-                                                vm.saveMoleRecord(ms)
+                                                if(vm.networkConnected())
+                                                    vm.saveMoleRecord(ms)
+                                                else{
+                                                    scaffoldHost.snackbarHostState.showSnackbar("Kindly enable network and rescan to save")
+                                                }
                                                 coroutineScope.launch {
                                                     mbss.show()
                                                 }
@@ -133,7 +142,7 @@ fun ScanScreen(setUpCam:(Preview.SurfaceProvider, ShowResultBSCallback)->Unit,ge
                     cameraPreviewView
                 })
                 Box(Modifier.fillMaxSize(),contentAlignment = Alignment.Center){
-                    AnimatedScanBox(size = DpSize(200f.dp, 200f.dp), lineSize = DpSize(1000.dp,10.dp))
+                        AnimatedScanBox(size = DpSize(200f.dp, 200f.dp), lineSize = DpSize(200f.dp,10.dp))
                 }
 
             }
@@ -156,6 +165,15 @@ fun AnimatedScanBox(size: DpSize,lineSize:DpSize){
         )
     )
 
+    val alphaAnimation by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.3f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000,200),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
     Box(
         Modifier
             .size(size)
@@ -167,6 +185,7 @@ fun AnimatedScanBox(size: DpSize,lineSize:DpSize){
              .size(lineSize)
              .offset(y = offsetAnimation.dp)
              .background(Black500)
+             .alpha(alphaAnimation)
              .clip(RoundedCornerShape(CornerSize(12.dp)))
      ) {}//line
     }

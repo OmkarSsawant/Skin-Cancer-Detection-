@@ -1,7 +1,7 @@
 package te.mini_project.skincancerdetection
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.content.Context
+import android.graphics.*
 import android.opengl.ETC1.getHeight
 import android.opengl.ETC1.getWidth
 import androidx.camera.core.ImageProxy
@@ -13,20 +13,52 @@ import androidx.compose.ui.text.intl.Locale
 import te.mini_project.skincancerdetection.data.Result
 import te.mini_project.skincancerdetection.data.SkinCancerModelLabeler
 import te.mini_project.skincancerdetection.room.models.MoleScan
+import java.io.ByteArrayOutputStream
 import java.sql.Time
 import java.util.*
 
 
-fun Int.onlyIntUppersString() = if(this > 0 ) this.toString() else ""
+fun Context.isNetworkEnabled(){
 
-fun ImageProxy.toBitmap(): Bitmap {
-    val buffer = planes[0].buffer
-    val bytes = ByteArray(buffer.remaining())
-    buffer.get(bytes)
-    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-    close()
-    return bitmap
 }
+
+fun Int.onlyIntUppersString() = if(this > 0 ) this.toString() else ""
+@androidx.camera.core.ExperimentalGetImage
+fun  imageProxyToBitmap(imageProxy: ImageProxy, cropRect: Rect?): Bitmap? {
+    val image = imageProxy.image ?: return null
+    try {
+        // Get the YUV image planes
+        val yBuffer = image.planes[0].buffer
+        val uBuffer = image.planes[1].buffer
+        val vBuffer = image.planes[2].buffer
+        val ySize = yBuffer.remaining()
+        val uSize = uBuffer.remaining()
+        val vSize = vBuffer.remaining()
+        val nv21 = ByteArray(ySize + uSize + vSize)
+        // Convert the image data from YUV to NV21 format
+        yBuffer.get(nv21, 0, ySize)
+        vBuffer.get(nv21, ySize, vSize)
+        uBuffer.get(nv21, ySize + vSize, uSize)
+        // Create the bitmap from the NV21 data
+        val yuvImage = YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
+        val out = ByteArrayOutputStream()
+        if (cropRect == null) {
+            yuvImage.compressToJpeg(Rect(0, 0, image.width, image.height), 100, out)
+        } else {
+            yuvImage.compressToJpeg(cropRect, 100, out)
+        }
+        val bytes = out.toByteArray()
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    } finally {
+        image.close()
+        imageProxy.close()
+    }
+    return null
+}
+
+
 //private fun getColor(x: Float, y: Float): Long {
 //    return if (x < 0 || y < 0 || x > getWidth().toFloat() || y > getHeight().toFloat()) {
 //        0 //Invalid, return 0
