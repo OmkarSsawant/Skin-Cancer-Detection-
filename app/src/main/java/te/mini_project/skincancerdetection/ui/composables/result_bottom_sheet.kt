@@ -18,13 +18,13 @@ import te.mini_project.skincancerdetection.ui.theme.Black700
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ResultModalBottomSheet(navToResults:()->Unit, btnState: ModalBottomSheetState,title:String, btnText:String, content: @Composable ()->Unit){
+fun ResultModalBottomSheet(navToResults:()->Unit,color: Color ,btnState: ModalBottomSheetState,title:String, btnText:String, content: @Composable ()->Unit){
 
 
     ModalBottomSheetLayout(sheetState = btnState, sheetShape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),sheetContent = {
 
         Spacer(modifier = Modifier.height(10.dp))
-        LinearProgressIndicator( color = Color.Red, progress = 1.0f, modifier = Modifier.height(10.dp).clip(
+        LinearProgressIndicator( color = color, progress = 1.0f, modifier = Modifier.height(10.dp).clip(
             RoundedCornerShape(7.dp)
         ).align(Alignment.CenterHorizontally))
         Spacer(modifier = Modifier.height(20.dp))

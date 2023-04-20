@@ -12,6 +12,7 @@ import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import te.mini_project.skincancerdetection.ml.Model
+import te.mini_project.skincancerdetection.toBitmap
 import java.io.ByteArrayOutputStream
 
 class SkinCancerDetector(context:Context) : OrientationEventListener(context,SensorManager.SENSOR_DELAY_NORMAL) {
@@ -22,7 +23,7 @@ class SkinCancerDetector(context:Context) : OrientationEventListener(context,Sen
 
     @SuppressLint("UnsafeOptInUsageError")
     fun detect(imgP: ImageProxy): Map<String, Float>? {
-        val mBITMAP = imgP.image?.toBitmap() ?: return null
+        val mBITMAP = imgP.toBitmap() ?: return null
         return detectBitmap(mBITMAP)
     }
 

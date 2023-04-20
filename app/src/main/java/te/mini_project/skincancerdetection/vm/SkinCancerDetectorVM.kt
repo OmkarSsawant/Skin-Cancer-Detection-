@@ -26,7 +26,7 @@ class SkinCancerDetectorVM(app:Application) : AndroidViewModel(app) {
     private val db: SkinCancerDatabase by lazy {
         SkinCancerDatabase.getInstance(app)
     }
-    private val fsMoleRecordQueue = mutableMapOf<String,MoleScan>()
+
     private val cm by lazy {
         getApplication<Application>().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     }
@@ -74,16 +74,10 @@ class SkinCancerDetectorVM(app:Application) : AndroidViewModel(app) {
         }
         viewModelScope.launch(Dispatchers.IO) {
             db.skinCancerDao().insertRecord(ms)
-            fsMoleRecordQueue[FirebaseAuth.getInstance().currentUser!!.uid] = ms
+            saveMoleRecordOf(FirebaseAuth.getInstance().currentUser!!.uid,ms)
         }
     }
 
 
-    fun updateFirestore() {
-        for ((uid,ms) in fsMoleRecordQueue){
-            saveMoleRecordOf(uid,ms)
-        }
-        fsMoleRecordQueue.clear()
-    }
 
 }

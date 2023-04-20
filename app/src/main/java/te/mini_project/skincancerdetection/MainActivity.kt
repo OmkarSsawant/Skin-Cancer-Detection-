@@ -1,5 +1,6 @@
 package te.mini_project.skincancerdetection
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -9,13 +10,14 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResult
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview.SurfaceProvider
+import androidx.camera.core.UseCase
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,7 +45,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import te.mini_project.skincancerdetection.data.Result
 import te.mini_project.skincancerdetection.data.SkinCancerDetector
-import te.mini_project.skincancerdetection.room.SkinCancerDatabase
 import te.mini_project.skincancerdetection.room.models.MoleScan
 import te.mini_project.skincancerdetection.ui.screens.*
 import te.mini_project.skincancerdetection.ui.theme.SkinCancerDetectionTheme
@@ -91,13 +92,21 @@ class MainActivity : ComponentActivity() {
     var navigationgToResults = false
 
     var showBtmSheet : ShowResultBSCallback ?=null
+
+    lateinit var capturer :ImageCapture
+
+    @SuppressLint("RestrictedApi")
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         skinCancerDetector = SkinCancerDetector(this)
         executors = Executors.newFixedThreadPool(3)
-
+       capturer =  ImageCapture.Builder()
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
+            .setIoExecutor(executors)
+            .setCameraSelector(CameraSelector.DEFAULT_BACK_CAMERA)
+            .build()
 
         if(arrayOf(
                 android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -147,13 +156,34 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("scan")
                             }, getNavController = {navController}, vm = vm)
                         }
-                        composable("scan"){
-                            ScanScreen(setUpCam = { sv,mbss-> setupCam(sv,mbss) }){
+                        composable("live-scan"){
+                            LiveScanScreen(setUpCam = { sv, mbss->
+                                val analyzer = ImageAnalysis.Builder()
+                                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                                    .build()
+                                    .also {
+
+                                        it.setAnalyzer(executors,SkinCancerAnalyzer())
+                                    }
+
+                                setupCam(sv,mbss,analyzer) }){
                                 val gson = GsonBuilder()
                                     .create()
                                 val jsonString = gson.toJson(reports)
                                 navController.navigate("show_results/$jsonString")
                                 navigationgToResults = false
+                            }
+                        }
+                        composable("scan"){
+                            ScanScreen(setUpCam = { sv ,mbss->
+                                setupCam(sv, mbss, capturer)
+                            },executor = executors, detector = skinCancerDetector, getCapturer = { if(::capturer.isInitialized) capturer else null },vm=vm,setReports = {
+                                rpts-> reports = rpts
+                            }) {
+                                val gson = GsonBuilder()
+                                    .create()
+                                val jsonString = gson.toJson(reports)
+                                navController.navigate("show_results/$jsonString")
                             }
                         }
                         composable("show_results/{results}"){ navBackStackEntry ->
@@ -200,8 +230,9 @@ class MainActivity : ComponentActivity() {
         val fAuth =  FirebaseAuth.getInstance()
         fAuth.removeAuthStateListener(listner)
     }
-
-    private  val TAG = "MainActivity"
+   companion object {
+       const val TAG = "MainActivity"
+   }
     private fun signIn(phoneNumber:String, enableNext:(String)->Unit) {
         Log.i(TAG, "signIn: Signing In ...")
         val phoneOpts = PhoneAuthOptions.newBuilder(FirebaseAuth.getInstance())
@@ -240,8 +271,9 @@ class MainActivity : ComponentActivity() {
     }
 
 
+    @SuppressLint("RestrictedApi")
     @OptIn(ExperimentalMaterialApi::class)
-    private fun setupCam(sv:SurfaceProvider,mbss:ShowResultBSCallback)  : Unit{
+    private fun setupCam(sv:SurfaceProvider, mbss:ShowResultBSCallback,use :UseCase)  : Unit{
         this.showBtmSheet = mbss
         ProcessCameraProvider.getInstance(this)
             .let { cf ->
@@ -250,15 +282,11 @@ class MainActivity : ComponentActivity() {
                     val preview = androidx.camera.core.Preview.Builder()
                         .build()
                         .also { it.setSurfaceProvider(sv) }
-                    val analyzer = ImageAnalysis.Builder()
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .build()
-                        .also {
-                            it.setAnalyzer(executors,SkinCancerAnalyzer())
-                        }
+
                 try {
                     cameraProvider.unbindAll()
-                    cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA,preview,analyzer)
+                        cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA,preview,use)
+                    Log.i(TAG, "setupCam: bounded to cam ${use.name}")
                 }catch (e:Exception){
                     e.printStackTrace()
                 }
@@ -299,9 +327,7 @@ class MainActivity : ComponentActivity() {
                                 scanDate = Date()
                                 scanResults = mapToResults(reports!!)
                             }
-                            FirebaseAuth.getInstance().currentUser?.let {
                                 vm.saveMoleRecord(ms)
-                            }
 
                                 //Navigate to Results Screen
                                 withContext(Dispatchers.Main){
@@ -333,10 +359,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onStop() {
-        super.onStop()
-        vm.updateFirestore()
-    }
 
     override fun onDestroy() {
         super.onDestroy()

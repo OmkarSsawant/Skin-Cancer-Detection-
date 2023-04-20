@@ -1,7 +1,10 @@
 package te.mini_project.skincancerdetection
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.opengl.ETC1.getHeight
 import android.opengl.ETC1.getWidth
+import androidx.camera.core.ImageProxy
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -16,6 +19,14 @@ import java.util.*
 
 fun Int.onlyIntUppersString() = if(this > 0 ) this.toString() else ""
 
+fun ImageProxy.toBitmap(): Bitmap {
+    val buffer = planes[0].buffer
+    val bytes = ByteArray(buffer.remaining())
+    buffer.get(bytes)
+    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    close()
+    return bitmap
+}
 //private fun getColor(x: Float, y: Float): Long {
 //    return if (x < 0 || y < 0 || x > getWidth().toFloat() || y > getHeight().toFloat()) {
 //        0 //Invalid, return 0
@@ -27,6 +38,7 @@ fun Int.onlyIntUppersString() = if(this > 0 ) this.toString() else ""
 //    }
 //}
 val SAFE_SKIN_DISEASES = arrayOf(
+    SkinCancerModelLabeler.getSkinClass(0),
     SkinCancerModelLabeler.getSkinClass(2),
     SkinCancerModelLabeler.getSkinClass(3),
     SkinCancerModelLabeler.getSkinClass(5),
